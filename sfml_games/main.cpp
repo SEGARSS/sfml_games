@@ -1,4 +1,4 @@
-#include <iostream>
+п»ї#include <iostream>
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
@@ -27,35 +27,35 @@ public:
 //-------------------------------------------------------------------------------------------------------------------
 int main()
 {
-    // Размер игрового окна
+    // Р Р°Р·РјРµСЂ РёРіСЂРѕРІРѕРіРѕ РѕРєРЅР°
     sf::RenderWindow window(sf::VideoMode({640, 480}), "SFML window");
 
     sf::Image heroimage;
-    heroimage.loadFromFile("images/hero.png");//Загружаем файл картинки.
+    heroimage.loadFromFile("images/hero.png");//Р—Р°РіСЂСѓР¶Р°РµРј С„Р°Р№Р» РєР°СЂС‚РёРЅРєРё.
 
     sf::Texture herotexture(heroimage);
     sf::Sprite spritehero(herotexture);
 
-    /*сделав такую запись - {0, 196}, {96, 96} - где кордината Y - 0,196 , а кордината Х - 96,96*/
-    spritehero.setTextureRect(sf::IntRect({0, 196}, {96, 96})); // Выводим героя, в заданных кординеатах.
-    spritehero.setPosition({ 50,25 }); //Начальные кординаты персонажа
+    /*СЃРґРµР»Р°РІ С‚Р°РєСѓСЋ Р·Р°РїРёСЃСЊ - {0, 196}, {96, 96} - РіРґРµ РєРѕСЂРґРёРЅР°С‚Р° Y - 0,196 , Р° РєРѕСЂРґРёРЅР°С‚Р° РҐ - 96,96*/
+    spritehero.setTextureRect(sf::IntRect({0, 196}, {96, 96})); // Р’С‹РІРѕРґРёРј РіРµСЂРѕСЏ, РІ Р·Р°РґР°РЅРЅС‹С… РєРѕСЂРґРёРЅРµР°С‚Р°С….
+    spritehero.setPosition({ 50,25 }); //РќР°С‡Р°Р»СЊРЅС‹Рµ РєРѕСЂРґРёРЅР°С‚С‹ РїРµСЂСЃРѕРЅР°Р¶Р°
 
 
-    //Завели переменные для времени. Чтобы можно было от чего отталкиватся.
+    //Р—Р°РІРµР»Рё РїРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РІСЂРµРјРµРЅРё. Р§С‚РѕР±С‹ РјРѕР¶РЅРѕ Р±С‹Р»Рѕ РѕС‚ С‡РµРіРѕ РѕС‚С‚Р°Р»РєРёРІР°С‚СЃСЏ.
     float CurrentFrame = 0;
     sf::Clock clock;
 
-    // Начать игровой цикл
+    // РќР°С‡Р°С‚СЊ РёРіСЂРѕРІРѕР№ С†РёРєР»
     while (window.isOpen())
     {
-        float time = clock.getElapsedTime().asMicroseconds(); //Задаём тайменг в милисекундах.
-        clock.restart(); //Делаем рестарт для сброса таймера.
-        time /= 800; //Скорость игры
+        float time = clock.getElapsedTime().asMicroseconds(); //Р—Р°РґР°С‘Рј С‚Р°Р№РјРµРЅРі РІ РјРёР»РёСЃРµРєСѓРЅРґР°С….
+        clock.restart(); //Р”РµР»Р°РµРј СЂРµСЃС‚Р°СЂС‚ РґР»СЏ СЃР±СЂРѕСЃР° С‚Р°Р№РјРµСЂР°.
+        time /= 800; //РЎРєРѕСЂРѕСЃС‚СЊ РёРіСЂС‹
 
-        // События процесса
+        // РЎРѕР±С‹С‚РёСЏ РїСЂРѕС†РµСЃСЃР°
         while (const std::optional event = window.pollEvent())
         {
-            // Закрыть окно: выход
+            // Р—Р°РєСЂС‹С‚СЊ РѕРєРЅРѕ: РІС‹С…РѕРґ
             if (event->is<sf::Event::Closed>())
                 window.close();
         }
@@ -67,7 +67,7 @@ int main()
             if (CurrentFrame > 3)
                 CurrentFrame -= 3;
 
-            /*96 * int(CurrentFrame) - Скакой переодичностью меняется картинка.*/
+            /*96 * int(CurrentFrame) - РЎРєР°РєРѕР№ РїРµСЂРµРѕРґРёС‡РЅРѕСЃС‚СЊСЋ РјРµРЅСЏРµС‚СЃСЏ РєР°СЂС‚РёРЅРєР°.*/
             spritehero.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 96 }, { 96, 96 }));
             spritehero.move({ -0.1f * time, 0.0f });
 
@@ -103,11 +103,11 @@ int main()
             spritehero.move({ 0.0f, 0.1f * time });
         }
 
-        // Очистка окна.
+        // РћС‡РёСЃС‚РєР° РѕРєРЅР°.
         window.clear();
-        //Рисуем фигуры с заданными параметрами.
+        //Р РёСЃСѓРµРј С„РёРіСѓСЂС‹ СЃ Р·Р°РґР°РЅРЅС‹РјРё РїР°СЂР°РјРµС‚СЂР°РјРё.
         window.draw(spritehero);
-        // Обновить окно.
+        // РћР±РЅРѕРІРёС‚СЊ РѕРєРЅРѕ.
         window.display();
     }
 }
