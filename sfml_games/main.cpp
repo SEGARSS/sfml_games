@@ -8,21 +8,55 @@ class Player
 {
 public:
     Player(sf::String F, int X, int Y, float W, float H)
-        : File(F), w(W), h(H), dir(0), x(X), y(Y), texture(image)
+        : sprite(texture), speed(0.0), x(X), y(Y), dir(0), File(F), w(W), h(H)
     {
-        File = F;
-        w = W, h = H;
-        image.loadFromFile({ "images/" + File });
-        image.createMaskFromColor(sf::Color({ 41, 33, 59 }));
+        image.loadFromFile({ "images/" + F });
+        image.createMaskFromColor(sf::Color(41,33,59));
         texture.loadFromImage(image);
-        x = X, y = Y;        
+        sprite.setTextureRect(sf::IntRect({static_cast<int>(w), static_cast<int>(h)}, {static_cast<int>(w), static_cast<int>(h)}));
     }
 
-    float x, y, w, h, speed = 0;
+    void update(float time)
+    {
+        switch (dir)
+        {
+        case 0:
+            dx = speed;
+            dy = 0;
+            break;
+
+        case 1:
+            dx = -speed;
+            dy = 0;
+            break;
+
+        case 2:
+            dx = 0;
+            dy = speed;
+            break;
+
+        case 3:
+            dx = 0;
+            dy = -speed;
+            break;
+
+        default:
+            break;
+        }
+
+        x += dx * time;
+        y += dy * time;
+
+        speed = 0;
+        sprite.setPosition({ x, y });
+    }
+
+    float dx, dy, x, y, w, h, speed;
     int dir; 
     sf::String File;
     sf::Image image;
     sf::Texture texture;
+    sf::Sprite sprite;
 };
 //-------------------------------------------------------------------------------------------------------------------
 int main()
@@ -30,15 +64,7 @@ int main()
     // Размер игрового окна
     sf::RenderWindow window(sf::VideoMode({640, 480}), "SFML window");
 
-    sf::Image heroimage;
-    heroimage.loadFromFile("images/hero.png");//Загружаем файл картинки.
-
-    sf::Texture herotexture(heroimage);
-    sf::Sprite spritehero(herotexture);
-
-    /*сделав такую запись - {0, 196}, {96, 96} - где кордината Y - 0,196 , а кордината Х - 96,96*/
-    spritehero.setTextureRect(sf::IntRect({0, 196}, {96, 96})); // Выводим героя, в заданных кординеатах.
-    spritehero.setPosition({ 50,25 }); //Начальные кординаты персонажа
+    Player p("hero.png", 250, 250, 96, 96);
 
 
     //Завели переменные для времени. Чтобы можно было от чего отталкиватся.
@@ -62,51 +88,60 @@ int main()
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
         {
+            p.dir = 1;
+            p.speed = 0.1;
+
             CurrentFrame += 0.005 * time;
 
             if (CurrentFrame > 3)
                 CurrentFrame -= 3;
 
-            /*96 * int(CurrentFrame) - Скакой переодичностью меняется картинка.*/
-            spritehero.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 96 }, { 96, 96 }));
-            spritehero.move({ -0.1f * time, 0.0f });
+            p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 96 }, { 96, 96 }));
 
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
         {
+            p.dir = 0;
+            p.speed = 0.1;
+
             CurrentFrame += 0.005 * time;
 
             if (CurrentFrame > 3)
                 CurrentFrame -= 3;
 
-            spritehero.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame) , 192  }, { 96 , 96 }));
-            spritehero.move({ 0.1f * time, 0.0f });
+            p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame) , 192  }, { 96 , 96 }));
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
         {
+            p.dir = 3;
+            p.speed = 0.1;
+
             CurrentFrame += 0.005 * time;
 
             if (CurrentFrame > 3)
                 CurrentFrame -= 3;
 
-            spritehero.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 288 }, { 96, 96 }));
-            spritehero.move({ 0.0f, -0.1f * time });
+            p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 288 }, { 96, 96 }));
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
         {
+            p.dir = 2;
+            p.speed = 0.1;
+
             CurrentFrame += 0.005 * time;
 
             if (CurrentFrame > 3)
                 CurrentFrame -= 3;
 
-            spritehero.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 0 }, { 96, 96 }));
-            spritehero.move({ 0.0f, 0.1f * time });
+            p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 0 }, { 96, 96 }));
         }
+
+        p.update(time);
 
         // Очистка окна.
         window.clear();
         //Рисуем фигуры с заданными параметрами.
-        window.draw(spritehero);
+        window.draw(p.sprite);
         // Обновить окно.
         window.display();
     }
