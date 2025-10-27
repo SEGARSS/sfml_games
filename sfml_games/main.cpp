@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#include "map.h" 
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
@@ -76,6 +77,12 @@ int main()
     //Создаём объект класса Player, задаём ему картинку, далее кординаты, плюс ширину и высоту.
     Player p("hero.png", 250, 250, 96, 96);
 
+    sf::Image map_image;
+    map_image.loadFromFile("images/map.png");
+    sf::Texture map;
+    map.loadFromImage(map_image);
+    sf::Sprite s_map(map);
+    s_map.setTexture(map);
 
     //Завели переменные для времени. Чтобы можно было от чего отталкиватся.
     float CurrentFrame = 0;
@@ -152,6 +159,26 @@ int main()
 
         // Очистка окна.
         window.clear();
+
+
+        //Ошибка - Надо прорабоать.
+        for (int i = 0; i < HEIGHT_MAP; i++)
+        {
+            for (int j = 0; j < WIDTH_MAP; j++)
+            {
+                if (TileMap[i][j] == ' ')
+                    s_map.setTextureRect(sf::IntRect({ static_cast<int>(0), static_cast<int>(0) }, { static_cast<int>(32), static_cast<int>(32) }));
+                if (TileMap[i][j] == 's')
+                    s_map.setTextureRect(sf::IntRect({ static_cast<int>(32), static_cast<int>(0) }, { static_cast<int>(32), static_cast<int>(32) }));
+                if (TileMap[i][j] == '0')
+                    s_map.setTextureRect(sf::IntRect({ static_cast<int>(64), static_cast<int>(0) }, { static_cast<int>(32), static_cast<int>(32) }));
+
+                s_map.setPosition({ j * 32 ,  i * 32 });
+                window.draw(s_map);
+            }
+
+        }
+
         //Рисуем фигуры с заданными параметрами.
         window.draw(p.sprite);
         // Обновить окно.
