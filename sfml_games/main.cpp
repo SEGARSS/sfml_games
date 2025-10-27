@@ -2,40 +2,48 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
-
+/*Конструктор с параметрами(проинициализированными).*/
 //-------------------------------------------------------------------------------------------------------------------
-class Player
+class Player // Класс Игрока.
 {
 public:
     Player(sf::String F, int X, int Y, float W, float H)
         : sprite(texture), speed(0.0), x(X), y(Y), dir(0), File(F), w(W), h(H)
     {
+        //Имя файл с расширением. И ложим в image наше изображение. При создании оббъекта, будет задавать имя файла.
         image.loadFromFile({ "images/" + F });
+
+        //Делаем изображение прозрачным.
         image.createMaskFromColor(sf::Color(41,33,59));
+
+        //Заливаем спрайт текстурами.
         texture.loadFromImage(image);
+
+        //Задаём спрайту один прямоугольник, для вывода одного льва, а не кучу львов сразу. IntRect привидение типов.
         sprite.setTextureRect(sf::IntRect({static_cast<int>(w), static_cast<int>(h)}, {static_cast<int>(w), static_cast<int>(h)}));
     }
 
+    /*Функция оживления объекта класса. Принимает время, и от этого осущиствляет движение объекта.*/
     void update(float time)
     {
-        switch (dir)
+        switch (dir)//Реализует повидение в зависимости от направления.
         {
-        case 0:
+        case 0://По иксу задаём положительную скорость, по игрику зануляем. Получаем, что персонажь идёт только в право.
             dx = speed;
             dy = 0;
             break;
 
-        case 1:
+        case 1://По иксу задаём отрицательную скорость, по игрику зануляем. Получаем, что персонажь идёт только в влево.
             dx = -speed;
             dy = 0;
             break;
 
-        case 2:
+        case 2://По иксу задаём нулевое значение, по игрику положительное. Получаем, что персонажь идёт только в вниз.
             dx = 0;
             dy = speed;
             break;
 
-        case 3:
+        case 3://По иксу задаём нулевое значение, по игрику отрицательное. Получаем, что персонажь идёт только в верх.
             dx = 0;
             dy = -speed;
             break;
@@ -44,19 +52,20 @@ public:
             break;
         }
 
+        //Наше ускорение на время, получает смещение кординат, и как следствие движение.
         x += dx * time;
         y += dy * time;
 
-        speed = 0;
-        sprite.setPosition({ x, y });
+        speed = 0; //Зануляем скорость, чтобы персонаж остановил после того как перестали нажимть клавиши.
+        sprite.setPosition({ x, y });//Выводим изображение по середине. Безсконечно выводим в этой функции, иначе персонаж стоял бы на месте.
     }
 
-    float dx, dy, x, y, w, h, speed;
-    int dir; 
-    sf::String File;
-    sf::Image image;
-    sf::Texture texture;
-    sf::Sprite sprite;
+    float x, y, w, h, dx, dy, speed;//Кординаты игрока х и у, высота и ширина w и h, ускорение speed(сама скорость)
+    int dir; //Направление (direction) движение игрока
+    sf::String File; //Файл расширения
+    sf::Image image;//sfml изображение
+    sf::Texture texture;//Файл текстур
+    sf::Sprite sprite;//sfml спрайт
 };
 //-------------------------------------------------------------------------------------------------------------------
 int main()
@@ -64,6 +73,7 @@ int main()
     // Размер игрового окна
     sf::RenderWindow window(sf::VideoMode({640, 480}), "SFML window");
 
+    //Создаём объект класса Player, задаём ему картинку, далее кординаты, плюс ширину и высоту.
     Player p("hero.png", 250, 250, 96, 96);
 
 
@@ -86,8 +96,10 @@ int main()
                 window.close();
         }
 
+        //Управлние персонажем с анимацие.
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
         {
+
             p.dir = 1;
             p.speed = 0.1;
 
@@ -96,8 +108,8 @@ int main()
             if (CurrentFrame > 3)
                 CurrentFrame -= 3;
 
+            //Через оъект класса, меняем изображение в зависимости от направления.
             p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 96 }, { 96, 96 }));
-
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
         {
@@ -120,7 +132,7 @@ int main()
 
             if (CurrentFrame > 3)
                 CurrentFrame -= 3;
-
+            
             p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 288 }, { 96, 96 }));
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
@@ -136,7 +148,7 @@ int main()
             p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 0 }, { 96, 96 }));
         }
 
-        p.update(time);
+        p.update(time); // Сброс времени. Без этого, не будет движения.
 
         // Очистка окна.
         window.clear();
