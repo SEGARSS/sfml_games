@@ -23,5 +23,8 @@
     <ClInclude Include="map.h">
       <Filter>Файлы ресурсов</Filter>
     </ClInclude>
+    <ClInclude Include="view.h">
+      <Filter>Файлы ресурсов</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,7 +1,8 @@
 ﻿#include <iostream>
-#include "map.h" 
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
+#include "map.h" 
+#include "view.h" 
 
 /*Конструктор с параметрами(проинициализированными).*/
 //-------------------------------------------------------------------------------------------------------------------
@@ -61,18 +62,35 @@ public:
         sprite.setPosition({ x, y });//Выводим изображение по середине. Безсконечно выводим в этой функции, иначе персонаж стоял бы на месте.
     }
 
-    float x, y, w, h, dx, dy, speed;//Кординаты игрока х и у, высота и ширина w и h, ускорение speed(сама скорость)
+    float getPlayerCoordinateX()
+    {
+        return x;
+    }
+
+    float getPlayerCoordinateY()
+    {
+        return y;
+    } 
+
+    float w, h, dx, dy, speed;//Кординаты игрока х и у, высота и ширина w и h, ускорение speed(сама скорость)
     int dir; //Направление (direction) движение игрока
     sf::String File; //Файл расширения
     sf::Image image;//sfml изображение
     sf::Texture texture;//Файл текстур
     sf::Sprite sprite;//sfml спрайт
+
+private:
+    float x, y = 0;
 };
 //-------------------------------------------------------------------------------------------------------------------
 int main()
 {
     // Размер игрового окна
     sf::RenderWindow window(sf::VideoMode({640, 480}), "SFML window");
+
+    //sf::View view(sf::FloatRect({ 250, 250 }, { 640, 480 }));
+    view.setSize({ 640, 480 }); // Устанавливаем размеры
+    view.setCenter({250, 250}); // Устанавливаем центр (по середине)
 
     //Создаём объект класса Player, задаём ему картинку, далее кординаты, плюс ширину и высоту.
     Player p("hero.png", 250, 250, 96, 96);
@@ -104,7 +122,7 @@ int main()
         }
 
         //Управлние персонажем с анимацие.
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
         {
 
             p.dir = 1;
@@ -117,8 +135,10 @@ int main()
 
             //Через оъект класса, меняем изображение в зависимости от направления.
             p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 96 }, { 96, 96 }));
+
+            getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
         {
             p.dir = 0;
             p.speed = 0.1;
@@ -129,8 +149,10 @@ int main()
                 CurrentFrame -= 3;
 
             p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame) , 192  }, { 96 , 96 }));
+
+            getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
         {
             p.dir = 3;
             p.speed = 0.1;
@@ -141,8 +163,10 @@ int main()
                 CurrentFrame -= 3;
             
             p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 288 }, { 96, 96 }));
+
+            getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
         {
             p.dir = 2;
             p.speed = 0.1;
@@ -153,30 +177,33 @@ int main()
                 CurrentFrame -= 3;
 
             p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 0 }, { 96, 96 }));
+
+            getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
         }
 
         p.update(time); // Сброс времени. Без этого, не будет движения.
+        viewmap(time); // Сколирование карты (прокрутка)
+        changeview();
+        window.setView(view); // Оживляем камеру
 
         // Очистка окна.
         window.clear();
 
 
-        //Ошибка - Надо прорабоать.
         for (int i = 0; i < HEIGHT_MAP; i++)
         {
             for (int j = 0; j < WIDTH_MAP; j++)
             {
                 if (TileMap[i][j] == ' ')
-                    s_map.setTextureRect(sf::IntRect({ static_cast<int>(0), static_cast<int>(0) }, { static_cast<int>(32), static_cast<int>(32) }));
-                if (TileMap[i][j] == 's')
-                    s_map.setTextureRect(sf::IntRect({ static_cast<int>(32), static_cast<int>(0) }, { static_cast<int>(32), static_cast<int>(32) }));
-                if (TileMap[i][j] == '0')
-                    s_map.setTextureRect(sf::IntRect({ static_cast<int>(64), static_cast<int>(0) }, { static_cast<int>(32), static_cast<int>(32) }));
+                    s_map.setTextureRect(sf::IntRect({ 0, 0 }, { 32, 32 }));
+                else if (TileMap[i][j] == 's')
+                    s_map.setTextureRect(sf::IntRect({ 32, 0 }, { 32, 32 }));
+                else if (TileMap[i][j] == '0')
+                    s_map.setTextureRect(sf::IntRect({ 64, 0 }, { 32, 32 }));
 
-                s_map.setPosition({ j * 32 ,  i * 32 });
+                s_map.setPosition({ static_cast<float>(j * 32), static_cast<float>(i * 32) });
                 window.draw(s_map);
             }
-
         }
 
         //Рисуем фигуры с заданными параметрами.
