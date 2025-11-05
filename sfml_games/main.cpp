@@ -4,13 +4,15 @@
 #include "map.h" 
 #include "view.h" 
 
+using namespace sf;
+
 /*Конструктор с параметрами(проинициализированными).*/
 //-------------------------------------------------------------------------------------------------------------------
 class Player // Класс Игрока.
 {
 public:
     Player(sf::String F, int X, int Y, float W, float H)
-        : sprite(texture), speed(0.0), x(X), y(Y), dir(0), File(F), w(W), h(H)
+        : sprite(texture), speed(0.0), x(X), y(Y), dir(0), File(F), w(W), h(H), playerScore(0)
     {
         //Имя файл с расширением. И ложим в image наше изображение. При создании оббъекта, будет задавать имя файла.
         image.loadFromFile({ "images/" + F });
@@ -101,9 +103,8 @@ public:
 
                 if (TileMap[i][j] == 's')//Если символ равен S - камень.
                 {
-                    //Делаем какоето дейстиве, в данном случаи телепорт
-                    x = 300;
-                    y = 300;
+                    //Добавляем очки
+                    playerScore++;
 
                     //Убираем после этого камень.
                     TileMap[i][j] = ' ';
@@ -113,7 +114,7 @@ public:
     }
 
     float w, h, dx, dy, speed;//Кординаты игрока х и у, высота и ширина w и h, ускорение speed(сама скорость)
-    int dir; //Направление (direction) движение игрока
+    int dir, playerScore; //Направление (direction) движение игрока
     sf::String File; //Файл расширения
     sf::Image image;//sfml изображение
     sf::Texture texture;//Файл текстур
@@ -145,6 +146,14 @@ int main()
     //Завели переменные для времени. Чтобы можно было от чего отталкиватся.
     float CurrentFrame = 0;
     sf::Clock clock;
+
+    const sf::Font font("ARIAL.TTF");
+
+    sf::Text text(font, L"Собранно камней 0");
+    text.setCharacterSize(20);
+    text.setStyle(sf::Text::Bold);//Стиль текста
+    text.setFillColor(sf::Color::Red);//Цвет текста
+    
 
     // Начать игровой цикл
     while (window.isOpen())
@@ -202,7 +211,7 @@ int main()
             if (CurrentFrame > 3)
                 CurrentFrame -= 3;
             
-            p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 288 }, { 96, 96 }));
+            p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 307 }, { 96, 96 }));
 
             getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
         }
@@ -227,8 +236,7 @@ int main()
         window.setView(view); // Оживляем камеру
 
         // Очистка окна.
-        window.clear();
-
+        window.clear();        
 
         for (int i = 0; i < HEIGHT_MAP; i++)
         {
@@ -245,6 +253,10 @@ int main()
                 window.draw(s_map);
             }
         }
+
+        text.setString(L"Собранно камней " + std::to_string(p.playerScore));//Конвертируем int в string.(to_string)
+        text.setPosition(sf::Vector2f(view.getCenter().x - 300, view.getCenter().y - 220));
+        window.draw(text);
 
         //Рисуем фигуры с заданными параметрами.
         window.draw(p.sprite);
