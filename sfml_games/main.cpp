@@ -12,7 +12,7 @@ class Player // Класс Игрока.
 {
 public:
     Player(sf::String F, int X, int Y, float W, float H)
-        : sprite(texture), speed(0.0), x(X), y(Y), dir(0), File(F), w(W), h(H), playerScore(0)
+        : sprite(texture), speed(0.0), x(X), y(Y), dir(0), File(F), w(W), h(H), playerScore(0), health(3), life(true), gameOver(false), gameWin(false)
     {
         //Имя файл с расширением. И ложим в image наше изображение. При создании оббъекта, будет задавать имя файла.
         image.loadFromFile({ "images/" + F });
@@ -63,6 +63,10 @@ public:
         speed = 0; //Зануляем скорость, чтобы персонаж остановил после того как перестали нажимть клавиши.
         sprite.setPosition({ x, y });//Выводим изображение по середине. Безсконечно выводим в этой функции, иначе персонаж стоял бы на месте.
         interactionWithMap();
+        if (health <= 0)
+        {
+            life = false;
+        }
     }
 
     float getPlayerCoordinateX()
@@ -109,12 +113,27 @@ public:
                     //Убираем после этого камень.
                     TileMap[i][j] = ' ';
                 }
+
+                if (TileMap[i][j] == 'h')//Если символ равен S - камень.
+                {
+                    health -= 40; // Отнимаем жизни
+                    TileMap[i][j] = ' '; // Убираем ромбик
+                }
+
+                if (TileMap[i][j] == 'f')//Прибовляем жизнь.
+                {
+                    health += 20;
+                    TileMap[i][j] = ' '; // Убираем зелённый ромбик.
+                }
             }            
-        }
+        }        
     }
 
     float w, h, dx, dy, speed;//Кординаты игрока х и у, высота и ширина w и h, ускорение speed(сама скорость)
-    int dir, playerScore; //Направление (direction) движение игрока
+    int dir, playerScore, health; //Направление (direction) движение игрока
+    bool life;
+    bool gameOver;
+    bool gameWin;
     sf::String File; //Файл расширения
     sf::Image image;//sfml изображение
     sf::Texture texture;//Файл текстур
@@ -137,7 +156,7 @@ int main()
     Player p("hero.png", 250, 250, 96, 96);
 
     sf::Image map_image;
-    map_image.loadFromFile("images/map.png");
+    map_image.loadFromFile("images/map2.png");
     sf::Texture map;
     map.loadFromImage(map_image);
     sf::Sprite s_map(map);
@@ -153,12 +172,31 @@ int main()
     text.setCharacterSize(20);
     text.setStyle(sf::Text::Bold);//Стиль текста
     text.setFillColor(sf::Color::Red);//Цвет текста
+
+    sf::Text textLife(font, L":Жизни 0");
+    textLife.setCharacterSize(20);
+    textLife.setStyle(sf::Text::Bold);//Стиль текста
+    textLife.setFillColor(sf::Color::Green);//Цвет текста
+
+    Text gameOverText(font, L"Ты лузер, проиграл!"); //L - чтоб были русские буквы вместо крякозябры.
+    gameOverText.setCharacterSize(60); //Размер текста
+    gameOverText.setStyle(Text::Bold);//Стиль текста
+    gameOverText.setFillColor(Color::Black);//Цвет текста
+    gameOverText.setPosition(sf::Vector2f(50, 200));
     
+    Clock gameTimeClock;
+    int gameTime = 0;
 
     // Начать игровой цикл
     while (window.isOpen())
     {
         float time = clock.getElapsedTime().asMicroseconds(); //Задаём тайменг в милисекундах.
+
+        if (p.life)
+        {
+            gameTime = gameTimeClock.getElapsedTime().asSeconds();
+        }
+
         clock.restart(); //Делаем рестарт для сброса таймера.
         time /= 800; //Скорость игры
 
@@ -171,69 +209,77 @@ int main()
         }
 
         //Управлние персонажем с анимацие.
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+        if (p.life)
         {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+            {
 
-            p.dir = 1;
-            p.speed = 0.1;
+                p.dir = 1;
+                p.speed = 0.1;
 
-            CurrentFrame += 0.005 * time;
+                CurrentFrame += 0.005 * time;
 
-            if (CurrentFrame > 3)
-                CurrentFrame -= 3;
+                if (CurrentFrame > 3)
+                    CurrentFrame -= 3;
 
-            //Через оъект класса, меняем изображение в зависимости от направления.
-            p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 96 }, { 96, 96 }));
+                //Через оъект класса, меняем изображение в зависимости от направления.
+                p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 96 }, { 96, 96 }));
 
-            getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
-        {
-            p.dir = 0;
-            p.speed = 0.1;
+                getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+            {
+                p.dir = 0;
+                p.speed = 0.1;
 
-            CurrentFrame += 0.005 * time;
+                CurrentFrame += 0.005 * time;
 
-            if (CurrentFrame > 3)
-                CurrentFrame -= 3;
+                if (CurrentFrame > 3)
+                    CurrentFrame -= 3;
 
-            p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame) , 192  }, { 96 , 96 }));
+                p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame) , 192  }, { 96 , 96 }));
 
-            getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
-        {
-            p.dir = 3;
-            p.speed = 0.1;
+                getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
+            {
+                p.dir = 3;
+                p.speed = 0.1;
 
-            CurrentFrame += 0.005 * time;
+                CurrentFrame += 0.005 * time;
 
-            if (CurrentFrame > 3)
-                CurrentFrame -= 3;
-            
-            p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 307 }, { 96, 96 }));
+                if (CurrentFrame > 3)
+                    CurrentFrame -= 3;
 
-            getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
-        {
-            p.dir = 2;
-            p.speed = 0.1;
+                p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 307 }, { 96, 96 }));
 
-            CurrentFrame += 0.005 * time;
+                getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
+            {
+                p.dir = 2;
+                p.speed = 0.1;
 
-            if (CurrentFrame > 3)
-                CurrentFrame -= 3;
+                CurrentFrame += 0.005 * time;
 
-            p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 0 }, { 96, 96 }));
+                if (CurrentFrame > 3)
+                    CurrentFrame -= 3;
 
-            getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
+                p.sprite.setTextureRect(sf::IntRect({ 96 * int(CurrentFrame), 0 }, { 96, 96 }));
+
+                getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
+            }
         }
 
         p.update(time); // Сброс времени. Без этого, не будет движения.
         viewmap(time); // Сколирование карты (прокрутка)
         changeview();
         window.setView(view); // Оживляем камеру
+
+        if (p.health < 0)
+        {
+            p.gameOver = true;
+        }
 
         // Очистка окна.
         window.clear();        
@@ -248,15 +294,28 @@ int main()
                     s_map.setTextureRect(sf::IntRect({ 32, 0 }, { 32, 32 }));
                 else if (TileMap[i][j] == '0')
                     s_map.setTextureRect(sf::IntRect({ 64, 0 }, { 32, 32 }));
+                else if (TileMap[i][j] == 'f')
+                    s_map.setTextureRect(sf::IntRect({ 96, 0 }, { 32, 32 }));
+                else if (TileMap[i][j] == 'h')
+                    s_map.setTextureRect(sf::IntRect({128, 0 }, { 32, 32 }));
 
                 s_map.setPosition({ static_cast<float>(j * 32), static_cast<float>(i * 32) });
                 window.draw(s_map);
             }
         }
 
-        text.setString(L"Собранно камней " + std::to_string(p.playerScore));//Конвертируем int в string.(to_string)
+        text.setString(L"Собранно камней " + std::to_string(p.playerScore) + L"\nВремя игры: " + std::to_string(gameTime));//Конвертируем int в string.(to_string)
         text.setPosition(sf::Vector2f(view.getCenter().x - 300, view.getCenter().y - 220));
         window.draw(text);
+
+        textLife.setString(L"Жизни " + std::to_string(p.health));//Конвертируем int в string.(to_string)
+        textLife.setPosition(sf::Vector2f(view.getCenter().x + 200, view.getCenter().y - 220));
+        window.draw(textLife);
+
+        if (p.gameOver)
+        {
+            window.draw(gameOverText);
+        }
 
         //Рисуем фигуры с заданными параметрами.
         window.draw(p.sprite);
