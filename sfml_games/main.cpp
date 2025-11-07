@@ -3,8 +3,11 @@
 #include <SFML/Graphics.hpp>
 #include "map.h" 
 #include "view.h" 
+#include "mission.h" 
+#include <sstream>
 
 using namespace sf;
+using namespace std;
 
 /*Конструктор с параметрами(проинициализированными).*/
 //-------------------------------------------------------------------------------------------------------------------
@@ -145,6 +148,7 @@ private:
 //-------------------------------------------------------------------------------------------------------------------
 int main()
 {
+    setlocale(LC_ALL, "ru");
     // Размер игрового окна
     sf::RenderWindow window(sf::VideoMode({640, 480}), "SFML window");
 
@@ -162,6 +166,15 @@ int main()
     sf::Sprite s_map(map);
     s_map.setTexture(map);
 
+    Image quest_image;
+    quest_image.loadFromFile("images/missionbg.jpg");
+    quest_image.createMaskFromColor(Color(0,0,0));
+    Texture quest_texture;
+    quest_texture.loadFromImage(quest_image);
+    Sprite s_quest(quest_texture);
+    s_quest.setTextureRect(IntRect({0,0},{340,510}));
+    s_quest.setScale({0.6f, 0.6f});
+
     //Завели переменные для времени. Чтобы можно было от чего отталкиватся.
     float CurrentFrame = 0;
     sf::Clock clock;
@@ -170,8 +183,7 @@ int main()
 
     sf::Text text(font, L"Собранно камней 0");
     text.setCharacterSize(20);
-    text.setStyle(sf::Text::Bold);//Стиль текста
-    text.setFillColor(sf::Color::Red);//Цвет текста
+    text.setFillColor(sf::Color::Black);//Цвет текста
 
     sf::Text textLife(font, L":Жизни 0");
     textLife.setCharacterSize(20);
@@ -186,6 +198,7 @@ int main()
     
     Clock gameTimeClock;
     int gameTime = 0;
+    bool showMissionText = true;
 
     // Начать игровой цикл
     while (window.isOpen())
@@ -206,6 +219,29 @@ int main()
             // Закрыть окно: выход
             if (event->is<sf::Event::Closed>())
                 window.close();
+
+            if (event->is<sf::Event::KeyPressed>())//событие нажатия клавиши
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Tab)) {//если клавиша ТАБ
+
+
+                    switch (showMissionText) {//переключатель, реагирующий на логическую переменную showMissionText
+
+                    case true: {
+                        std::ostringstream playerHealthString;//строка здоровья игрока
+                        playerHealthString << p.health; //заносим в строку здоровье 
+                        std::ostringstream task;//строка текста миссии
+                        task << getTextMission(getCurrentMission(p.getPlayerCoordinateX()));//вызывается функция getTextMission (она возвращает текст миссии), которая принимает в качестве аргумента функцию getCurrentMission(возвращающую номер миссии), а уже эта ф-ция принимает в качестве аргумента функцию p.getplayercoordinateX() (эта ф-ция возвращает Икс координату игрока)
+                        text.setString(L"Здоровье: " + playerHealthString.str() + L"\n" + task.str());
+                        showMissionText = false;//эта строка позволяет убрать все что мы вывели на экране
+                        break;//выходим , чтобы не выполнить условие "false" (которое ниже)
+                    }
+                    case false: {
+                        text.setString("");//если не нажата клавиша таб, то весь этот текст пустой
+                        showMissionText = true;// а эта строка позволяет снова нажать клавишу таб и получить вывод на экран
+                        break;
+                    }
+                    }
+                }           
         }
 
         //Управлние персонажем с анимацие.
@@ -304,13 +340,20 @@ int main()
             }
         }
 
-        text.setString(L"Собранно камней " + std::to_string(p.playerScore) + L"\nВремя игры: " + std::to_string(gameTime));//Конвертируем int в string.(to_string)
-        text.setPosition(sf::Vector2f(view.getCenter().x - 300, view.getCenter().y - 220));
-        window.draw(text);
+        //text.setString(L"Собранно камней " + std::to_string(p.playerScore) + L"\nВремя игры: " + std::to_string(gameTime));//Конвертируем int в string.(to_string)
+        //text.setPosition(sf::Vector2f(view.getCenter().x - 300, view.getCenter().y - 220));
+        //window.draw(text);
 
-        textLife.setString(L"Жизни " + std::to_string(p.health));//Конвертируем int в string.(to_string)
-        textLife.setPosition(sf::Vector2f(view.getCenter().x + 200, view.getCenter().y - 220));
-        window.draw(textLife);
+        //textLife.setString(L"Жизни " + std::to_string(p.health));//Конвертируем int в string.(to_string)
+        //textLife.setPosition(sf::Vector2f(view.getCenter().x + 200, view.getCenter().y - 220));
+        //window.draw(textLife);
+
+        if (!showMissionText) 
+        {
+            text.setPosition({ view.getCenter().x + 125, view.getCenter().y - 130 });//позиция всего этого текстового блока
+            s_quest.setPosition({ view.getCenter().x + 115, view.getCenter().y - 130 });//позиция фона для блока			
+            window.draw(s_quest); window.draw(text); //рисуем спрайт свитка (фон для текста миссии). а затем и текст. все это завязано на логическую переменную, которая меняет свое состояние от нажатия клавиши ТАБ
+        }
 
         if (p.gameOver)
         {
