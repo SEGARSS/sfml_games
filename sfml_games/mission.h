@@ -1,4 +1,8 @@
 ﻿#pragma once
+#include <string>
+#include <locale>
+#include <codecvt>
+#include <sstream>
 
 int getCurrentMission(int x)
 {

@@ -5,7 +5,13 @@
 #include "view.h" 
 #include "mission.h" 
 #include <sstream>
-
+#include <string>
+#include <locale>
+#include <codecvt>
+#include <string>
+#include <locale>
+#include <codecvt>
+#include <sstream>
 //
 using namespace sf;
 using namespace std;
@@ -151,7 +157,7 @@ int main()
 {
     setlocale(LC_ALL, "ru");
     // Размер игрового окна
-    sf::RenderWindow window(sf::VideoMode({640, 480}), "SFML window");
+    sf::RenderWindow window(sf::VideoMode({1366, 768}), "Lesson 15. kychka-pc.ru");
 
     //sf::View view(sf::FloatRect({ 250, 250 }, { 640, 480 }));
     view.setSize({ 640, 480 }); // Устанавливаем размеры
@@ -221,28 +227,28 @@ int main()
             if (event->is<sf::Event::Closed>())
                 window.close();
 
-            if (event->is<sf::Event::KeyPressed>())//событие нажатия клавиши
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Tab)) {//если клавиша ТАБ
+			if (event->is<sf::Event::KeyPressed>())//событие нажатия клавиши
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Tab)) {//если клавиша ТАБ
 
 
-                    switch (showMissionText) {//переключатель, реагирующий на логическую переменную showMissionText
+					switch (showMissionText) {//переключатель, реагирующий на логическую переменную showMissionText
 
-                    case true: {
-                        std::ostringstream playerHealthString;//строка здоровья игрока
-                        playerHealthString << p.health; //заносим в строку здоровье 
-                        std::ostringstream task;//строка текста миссии
-                        task << getTextMission(getCurrentMission(p.getPlayerCoordinateX()));//вызывается функция getTextMission (она возвращает текст миссии), которая принимает в качестве аргумента функцию getCurrentMission(возвращающую номер миссии), а уже эта ф-ция принимает в качестве аргумента функцию p.getplayercoordinateX() (эта ф-ция возвращает Икс координату игрока)
-                        text.setString(L"Здоровье: " + playerHealthString.str() + L"\n" + task.str());
-                        showMissionText = false;//эта строка позволяет убрать все что мы вывели на экране
-                        break;//выходим , чтобы не выполнить условие "false" (которое ниже)
-                    }
-                    case false: {
-                        text.setString("");//если не нажата клавиша таб, то весь этот текст пустой
-                        showMissionText = true;// а эта строка позволяет снова нажать клавишу таб и получить вывод на экран
-                        break;
-                    }
-                    }
-                }           
+					case true: {
+						std::ostringstream playerHealthString;//строка здоровья игрока
+						playerHealthString << p.health; //заносим в строку здоровье 
+						std::ostringstream task;//строка текста миссии
+						task << getTextMission(getCurrentMission(p.getPlayerCoordinateX()));//вызывается функция getTextMission (она возвращает текст миссии), которая принимает в качестве аргумента функцию getCurrentMission(возвращающую номер миссии), а уже эта ф-ция принимает в качестве аргумента функцию p.getplayercoordinateX() (эта ф-ция возвращает Икс координату игрока)
+						text.setString(L"Здоровье: " + playerHealthString.str() + L"\n" + task.str());
+						showMissionText = false;//эта строка позволяет убрать все что мы вывели на экране
+						break;//выходим , чтобы не выполнить условие "false" (которое ниже)
+					}
+					case false: {
+						text.setString("");//если не нажата клавиша таб, то весь этот текст пустой
+						showMissionText = true;// а эта строка позволяет снова нажать клавишу таб и получить вывод на экран
+						break;
+					}
+					}
+				}
         }
 
         //Управлние персонажем с анимацие.
@@ -306,6 +312,25 @@ int main()
 
                 getPlayerCordinateForview(p.getPlayerCoordinateX(), p.getPlayerCoordinateY());
             }
+        }
+
+        sf::Vector2i localPosition = Mouse::getPosition(window);
+
+        if (localPosition.x < 3)
+        {
+            view.move(sf::Vector2f(-0.2 * time, 0));
+        }
+        if (localPosition.x > window.getSize().x - 3)
+        {
+            view.move(sf::Vector2f(0.2 * time, 0));
+        }
+        if (localPosition.y > window.getSize().y - 3)
+        {
+            view.move(sf::Vector2f(0, 0.2 * time));
+        }
+        if (localPosition.y < 3)
+        {
+            view.move(sf::Vector2f(0, -0.2 * time));
         }
 
         p.update(time); // Сброс времени. Без этого, не будет движения.
